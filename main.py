@@ -8,20 +8,22 @@ from typing import Callable, Dict, List
 
 from attacks.prompt_injection import load_attacks
 from evaluation.safety_score import SafetyResult, score_response
-from models.ollama_model import query_model as query_ollama
-from models.openai_model import query_model as query_openai
 
 ModelQueryFn = Callable[[str], str]
 
 
 def resolve_model(provider: str) -> ModelQueryFn:
-    providers: Dict[str, ModelQueryFn] = {
-        "openai": query_openai,
-        "ollama": query_ollama,
-    }
-    if provider not in providers:
-        raise ValueError(f"Unsupported provider '{provider}'. Use one of: {', '.join(providers)}")
-    return providers[provider]
+    if provider == "openai":
+        from models.openai_model import query_model as query_openai
+
+        return query_openai
+    if provider == "ollama":
+        from models.ollama_model import query_model as query_ollama
+
+        return query_ollama
+
+    providers = ["openai", "ollama"]
+    raise ValueError(f"Unsupported provider '{provider}'. Use one of: {', '.join(providers)}")
 
 
 def run(provider: str) -> None:
